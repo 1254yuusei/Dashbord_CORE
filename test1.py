@@ -65,15 +65,28 @@ fig.add_shape(type="line",
                 )
 
 fig.update_layout(
-                        # showlegend=True,
-                        yaxis=dict(
-                                    # range=(y_min, y_max),
-                                    title='深部体温'
+        legend=dict(
+                        x=0.015,
+                        y=0.96,
+                        orientation='h'),
+                        showlegend=True,
+                        margin=dict(
+                        t=0,
+                        b=30,
+                        l=25,
+                        r=0
+                ),
+        height = 200,
+        # showlegend=True,
+        yaxis=dict(
+         # range=(y_min, y_max),
+        # title='深部体温'
                                     ),
-                        xaxis=dict(
-                                    # range=(x_min, x_max),
-                                    title='時間'
+        xaxis=dict(
+        # range=(x_min, x_max),
+        # title='時間'
                                     
                                     )
-                )                                          
-st.plotly_chart(fig, use_container_width=True) 
+                )          
+                                                
+st.plotly_chart(fig,use_container_width=True) 
