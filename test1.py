@@ -39,7 +39,6 @@ plot_data['Temp'] = y
 
 # CORE温度差判定
 
-tcr = df.pct
 
 
 
