@@ -39,7 +39,7 @@ plot_data['Temp'] = y
 
 # CORE温度差判定
 
-
+tcr = df.pct
 
 
 
@@ -69,7 +69,7 @@ fig.update_layout(
                         # showlegend=True,
                         yaxis=dict(
                                     # range=(y_min, y_max),
-                                    title='Oura'
+                                    title='深部体温'
                                     ),
                         xaxis=dict(
                                     # range=(x_min, x_max),
