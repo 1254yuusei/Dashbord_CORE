@@ -4,8 +4,12 @@ import pandas as pd
 import oura
 import datetime
 import plotly.graph_objects as go
-
 st.title('概日リズム可視化アプリ')
+
+# 時間取得
+dt_now = datetime.datetime.now()
+dt_yd = dt_now - datetime.timedelta(days=1)
+
 
 #ouraアクセストークン
 access_token="QVRKWLEC4P6F7OICXAPUDX5WIVRHANEV"
@@ -18,27 +22,20 @@ end_text="2022-11-17"
 
 #上からそれぞれ、Sleepデータ、Activityデータ、Readinessデータをdataframeに格納しています。
 data_oura=client.sleep_df(start=start_text, end=end_text)
-# Ouraデータ,datetime
-# data_sleep = data_oura.iloc[:,[3,4]]
-# st.write(data_sleep)
+
+# datetime Oura
 date_start =pd.to_datetime(data_oura['bedtime_start_dt_adjusted'], format='%Y-%m-%d %H:%M:%S')
 date_end =pd.to_datetime(data_oura['bedtime_end_dt_adjusted'], format='%Y-%m-%d %H:%M:%S')
 
-# print(date_start)
-# print(date_end)
-
-
-#COREのグラフ表示
+#COREのデータ取得
 df = pd.read_csv('data/CORE_TEMP_1117.csv', sep = ';', header = 1,)
 data = pd.to_datetime(df.iloc[:,0])
 y = df.iloc[:,1]
 plot_data = pd.DataFrame(data)
 plot_data['Temp'] = y
 
-print(type(plot_data))
-print(plot_data)
 
-
+# CORE,Ouraプロット
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=plot_data['DateTime'],
                          y=plot_data['Temp'],
