@@ -10,7 +10,7 @@ st.title('概日リズム可視化アプリ')
 import datetime
 now = datetime.datetime.now()
 dt_now = now.strftime('%Y-%m-%d')
-yd = now - datetime.timedelta(days=35)
+yd = now - datetime.timedelta(days=1)
 dt_yd = yd.strftime('%Y-%m-%d')
 
 
@@ -22,6 +22,9 @@ client = oura.client_pandas.OuraClientDataFrame(personal_access_token=access_tok
 #期間を指定（全期間が欲しい場合はこのままでOKです。）
 start_text = dt_yd
 end_text = dt_now
+
+# start_text = '2022-11-16'
+# end_text = '2022-11-17'
 
 #上からそれぞれ、Sleepデータ、Activityデータ、Readinessデータをdataframeに格納しています。
 data_oura=client.sleep_df(start=start_text, end=end_text)
