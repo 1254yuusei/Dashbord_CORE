@@ -3,7 +3,12 @@ import numpy as np
 import pandas as pd
 import oura
 import datetime
+import time
 import plotly.graph_objects as go
+import pytz
+
+tz = pytz.timezone('UTC')
+
 st.title('概日リズム可視化アプリ')
 
 # 時間取得
@@ -22,28 +27,32 @@ access_token="QVRKWLEC4P6F7OICXAPUDX5WIVRHANEV"
 client = oura.client_pandas.OuraClientDataFrame(personal_access_token=access_token)
 
 #期間を指定（全期間が欲しい場合はこのままでOKです。）
-start_text = dt_yd
-end_text = dt_now
+# start_text = dt_yd
+# end_text = dt_now
 
-start_text_yd = dt_dby
-end_text_yd = dt_yd
-# start_text = '2022-11-16'
-# end_text = '2022-11-17'
+# start_text_yd = dt_dby
+# end_text_yd = dt_yd
+start_text = '2022-12-18'# 18日の寝た時間19日の朝起きた時間
+end_text = '2022-12-18' # 19日の寝た時間20日の朝起きた時間 こっちはもし19日ならまだjsonデータがない
 
 #Sleepデータをdataframeに格納
 data_oura = client.sleep_df(start=start_text, end=end_text)
-data_oura_yd = client.sleep_df(start=start_text_yd, end=end_text_yd)
+# data_oura_yd = client.sleep_df(start=start_text_yd, end=end_text_yd)
 
 # datetime Oura
 date_start =pd.to_datetime(data_oura['bedtime_start_dt_adjusted'], format='%Y-%m-%d %H:%M:%S')
 date_end =pd.to_datetime(data_oura['bedtime_end_dt_adjusted'], format='%Y-%m-%d %H:%M:%S')
+date_end = date_end.dt.tz_localize(None)
 
 #COREのデータ取得
-df = pd.read_csv('data/CORE_data.csv', sep = ';', header = 1,)
+# df = pd.read_csv('data/CORE_data.csv', sep = ';', header = 1,)
+df = pd.read_csv('data/CORE_data_1219.csv', sep = ';', header = 1,)
 data = pd.to_datetime(df.iloc[:,0])
+
 y = df.iloc[:,1]
 plot_data = pd.DataFrame(data)
 plot_data['Temp'] = y
+
 
 # COREの前日データ取得
 df_yd = pd.read_csv('data/CORE_data_yd.csv', sep = ';', header = 1,)
@@ -109,25 +118,79 @@ st.plotly_chart(fig,use_container_width=True)
 
 
 # CORE,Ouraプロット
-fig_yd = go.Figure()
-fig_yd.add_trace(go.Scatter(x=plot_data_yd['DateTime'],
-                         y=plot_data_yd['Temp'],
-                         mode='lines',
-                         name='深部体温',
-                        ),
-                )
-fig_yd.add_shape(type="line",
-                        x0=data_oura_yd['bedtime_start_dt_adjusted'][0], y0=36,
-                        x1=data_oura_yd['bedtime_start_dt_adjusted'][0], y1=38,
-                        line=dict(color="Red",width=3)
-                )
-fig_yd.add_shape(type="line",
-                        x0=data_oura_yd['bedtime_end_dt_adjusted'][0], y0=36,
-                        x1=data_oura_yd['bedtime_end_dt_adjusted'][0], y1=38,
-                        line=dict(color="Red",width=3)
-                )
+# fig_yd = go.Figure()
+# fig_yd.add_trace(go.Scatter(x=plot_data_yd['DateTime'],
+#                          y=plot_data_yd['Temp'],
+#                          mode='lines',
+#                          name='深部体温',
+#                         ),
+#                 )
+# fig_yd.add_shape(type="line",
+#                         x0=data_oura_yd['bedtime_start_dt_adjusted'][0], y0=36,
+#                         x1=data_oura_yd['bedtime_start_dt_adjusted'][0], y1=38,
+#                         line=dict(color="Red",width=3)
+#                 )
+# fig_yd.add_shape(type="line",
+#                         x0=data_oura_yd['bedtime_end_dt_adjusted'][0], y0=36,
+#                         x1=data_oura_yd['bedtime_end_dt_adjusted'][0], y1=38,
+#                         line=dict(color="Red",width=3)
+#                 )
 
-fig_yd.update_layout(
+# fig_yd.update_layout(
+#         legend=dict(
+#                         x=0.015,
+#                         y=0.96,
+#                         orientation='h'),
+#                         showlegend=True,
+#                         margin=dict(
+#                         t=0,
+#                         b=30,
+#                         l=25,
+#                         r=0
+#                 ),
+#         height = 200,
+#         # showlegend=True,
+#         yaxis=dict(
+#          # range=(y_min, y_max),
+#         # title='深部体温'
+#                                     ),
+#         xaxis=dict(
+#         # range=(x_min, x_max),
+#         # title='時間'
+                                    
+#                                     )
+#                 )          
+# st.subheader('昨日の概日リズム')                           
+# st.plotly_chart(fig_yd,use_container_width=True) 
+
+# COREの30分前との変化率取得
+chang_rate = plot_data['Temp'].pct_change(30, axis=0)
+plot_data['diff30m'] = chang_rate
+plot_data['diff30m'][plot_data['diff30m']==np.NaN] = 0
+df_cr = pd.DataFrame(chang_rate)
+df_cr['DateTime'] = data
+
+
+# DataFrame Get up Change Rate
+df_gucr = df_cr.query('Temp > 0.0065')
+subset_df = df_gucr[df_gucr['DateTime'] > date_end[0]]
+df_getup = subset_df.iloc[1,1]
+
+# 起床時刻と体温上がり初めの差異
+rhythm_delay = df_getup - date_end[0]
+a = 'あなたの睡眠リズムのずれは'
+b = 'です'
+c = rhythm_delay
+st.markdown("{0}{1}{2}".format(a,c,b))
+
+# 変化率のグラフ
+fig_cr = go.Figure()
+fig_cr.add_trace(go.Scatter(x=plot_data['DateTime'],
+                        y=plot_data['diff30m'],
+                        mode='lines',
+                        ))
+
+fig_cr.update_layout(
         legend=dict(
                         x=0.015,
                         y=0.96,
@@ -151,5 +214,8 @@ fig_yd.update_layout(
                                     
                                     )
                 )          
-st.subheader('昨日の概日リズム')                           
-st.plotly_chart(fig_yd,use_container_width=True) 
+st.subheader('変化率') 
+st.plotly_chart(fig_cr,use_container_width=True) 
+
+print(len(df_gucr['Temp']))
+print(len(df_gucr['Temp']))
