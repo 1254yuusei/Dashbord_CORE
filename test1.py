@@ -41,12 +41,13 @@ data_oura = client.sleep_df(start=start_text, end=end_text)
 
 # datetime Oura
 date_start =pd.to_datetime(data_oura['bedtime_start_dt_adjusted'], format='%Y-%m-%d %H:%M:%S')
+date_start = date_start.dt.tz_localize(None)
 date_end =pd.to_datetime(data_oura['bedtime_end_dt_adjusted'], format='%Y-%m-%d %H:%M:%S')
 date_end = date_end.dt.tz_localize(None)
 
 #COREのデータ取得
-# df = pd.read_csv('data/CORE_data.csv', sep = ';', header = 1,)
-df = pd.read_csv('data/CORE_data_1219.csv', sep = ';', header = 1,)
+df = pd.read_csv('data/CORE_data.csv', sep = ';', header = 1,)
+# df = pd.read_csv('data/CORE_data_1219.csv', sep = ';', header = 1,)
 data = pd.to_datetime(df.iloc[:,0])
 
 y = df.iloc[:,1]
@@ -176,12 +177,26 @@ df_gucr = df_cr.query('Temp > 0.0065')
 subset_df = df_gucr[df_gucr['DateTime'] > date_end[0]]
 df_getup = subset_df.iloc[1,1]
 
+# DataFrame Fall Asleep Change Rate
+df_facr = df_cr.query('Temp < -0.0045')
+facr_df = df_facr[df_facr['DateTime'] > date_start[0]]
+df_fall_asleep = facr_df.iloc[1,1]
+
+
 # 起床時刻と体温上がり初めの差異
 rhythm_delay = df_getup - date_end[0]
-a = 'あなたの睡眠リズムのずれは'
+a = 'あなたの起きてから体温が上がり始めるまでの時間は'
 b = 'です'
 c = rhythm_delay
 st.markdown("{0}{1}{2}".format(a,c,b))
+
+# 就寝時刻と体温下がり始めの差異
+rhythm_delay_fa = df_fall_asleep - date_start[0]
+a = 'あなたの眠ってから体温が下がり始めるまでの時間は'
+b = 'です'
+c = rhythm_delay_fa
+st.markdown("{0}{1}{2}".format(a,c,b))
+
 
 # 変化率のグラフ
 fig_cr = go.Figure()
@@ -216,6 +231,3 @@ fig_cr.update_layout(
                 )          
 st.subheader('変化率') 
 st.plotly_chart(fig_cr,use_container_width=True) 
-
-print(len(df_gucr['Temp']))
-print(len(df_gucr['Temp']))
