@@ -48,7 +48,7 @@ date_end = date_end.dt.tz_localize(None)
 #COREのデータ取得
 df = pd.read_csv('data/CORE_data.csv', sep = ';', header = 1,)
 # df = pd.read_csv('data/CORE_data_1219.csv', sep = ';', header = 1,)
-data = pd.to_datetime(df.iloc[:,0])
+data = pd.to_datetime(df.iloc[:,0], format = '%d.%m.%Y %H:%M:%S')
 
 y = df.iloc[:,1]
 plot_data = pd.DataFrame(data)
@@ -173,7 +173,7 @@ df_cr['DateTime'] = data
 
 
 # DataFrame Get up Change Rate
-df_gucr = df_cr.query('Temp > 0.0065')
+df_gucr = df_cr.query('Temp > 0.0055')
 subset_df = df_gucr[df_gucr['DateTime'] > date_end[0]]
 df_getup = subset_df.iloc[1,1]
 
