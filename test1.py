@@ -7,7 +7,7 @@ import time
 import plotly.graph_objects as go
 import pytz
 import math
-
+import matplotlib.pyplot as plt
 
 
 tz = pytz.timezone('UTC')
@@ -22,6 +22,8 @@ yd = now - datetime.timedelta(days=1)
 dt_yd = yd.strftime('%Y-%m-%d')
 dby = now - datetime.timedelta(days=2)
 dt_dby = dby.strftime('%Y-%m-%d')
+days_ago_3 = now - datetime.timedelta(days=3)
+dt_days_ago_3 = days_ago_3.strftime('%Y-%m-%d')
 
 
 #ouraアクセストークン
@@ -66,27 +68,58 @@ plot_data['Temp'] = y
 
 # COREの前日データ取得
 df_yd = pd.read_csv('data/CORE_data_yd.csv', sep = ';', header = 1,)
-data_yd = pd.to_datetime(df_yd.iloc[:,0])
+data_yd = pd.to_datetime(df_yd.iloc[:,0], format = '%d.%m.%Y %H:%M:%S')
+
 y_yd = df_yd.iloc[:,1]
 plot_data_yd = pd.DataFrame(data_yd)
 plot_data_yd['Temp'] = y_yd
-
-# CORE温度差判定
-
+new_datetime_yd = plot_data_yd['DateTime'] + datetime.timedelta(days=1)
 
 
+# COREの一昨日のデータ
+df_dby = pd.read_csv('data/CORE_data_dby.csv', sep = ';', header = 1)
+data_dby = pd.to_datetime(df_dby.iloc[:,0], format = '%d.%m.%Y %H:%M:%S')
+
+y_dby = df_dby.iloc[:,1]
+plot_data_dby = pd.DataFrame(data_dby)
+plot_data_dby['Temp'] = y_dby
+new_datetime_dby = plot_data_dby['DateTime'] + datetime.timedelta(days=2)
+
+print(new_datetime_dby)
+print(plot_data_dby['Temp'])
 
 
 
 
 # CORE,Ouraプロット
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=plot_data['DateTime'],
+f1 = go.Scatter(x=plot_data['DateTime'],
                          y=plot_data['Temp'],
                          mode='lines',
-                         name='深部体温',
-                        ),
-                )
+                         name='今日の深部体温',
+                        )
+f2 = go.Scatter(x=new_datetime_yd,
+                         y=plot_data_yd['Temp'],
+                         mode='lines',
+                         name='昨日の深部体温'
+                        )
+
+f3 = go.Scatter(x=new_datetime_dby,
+                         y=plot_data_dby['Temp'],
+                         mode='lines',
+                         name='一昨日のの深部体温'
+                        )
+# 表示グラフ選択
+x_choice = st.radio("", ("今日", "昨日","一昨日"), horizontal=True, args=[1, 0])
+
+if x_choice == "今日":
+        fig.add_traces((f1))
+elif x_choice == "昨日":
+        fig.add_traces((f1,f2))
+elif x_choice == "一昨日":
+        fig.add_traces((f1,f2,f3))
+
+
 fig.add_shape(type="line",
                         x0=data_oura['bedtime_start_dt_adjusted'][0], y0=36,
                         x1=data_oura['bedtime_start_dt_adjusted'][0], y1=38,
@@ -113,7 +146,7 @@ fig.update_layout(
         height = 200,
         # showlegend=True,
         yaxis=dict(
-         # range=(y_min, y_max),
+        #  range=(y_min, y_max),
         # title='深部体温'
                                     ),
         xaxis=dict(
@@ -125,53 +158,6 @@ fig.update_layout(
 st.subheader('今日の概日リズム')                                                
 st.plotly_chart(fig,use_container_width=True) 
 
-
-
-# CORE,Ouraプロット
-# fig_yd = go.Figure()
-# fig_yd.add_trace(go.Scatter(x=plot_data_yd['DateTime'],
-#                          y=plot_data_yd['Temp'],
-#                          mode='lines',
-#                          name='深部体温',
-#                         ),
-#                 )
-# fig_yd.add_shape(type="line",
-#                         x0=data_oura_yd['bedtime_start_dt_adjusted'][0], y0=36,
-#                         x1=data_oura_yd['bedtime_start_dt_adjusted'][0], y1=38,
-#                         line=dict(color="Red",width=3)
-#                 )
-# fig_yd.add_shape(type="line",
-#                         x0=data_oura_yd['bedtime_end_dt_adjusted'][0], y0=36,
-#                         x1=data_oura_yd['bedtime_end_dt_adjusted'][0], y1=38,
-#                         line=dict(color="Red",width=3)
-#                 )
-
-# fig_yd.update_layout(
-#         legend=dict(
-#                         x=0.015,
-#                         y=0.96,
-#                         orientation='h'),
-#                         showlegend=True,
-#                         margin=dict(
-#                         t=0,
-#                         b=30,
-#                         l=25,
-#                         r=0
-#                 ),
-#         height = 200,
-#         # showlegend=True,
-#         yaxis=dict(
-#          # range=(y_min, y_max),
-#         # title='深部体温'
-#                                     ),
-#         xaxis=dict(
-#         # range=(x_min, x_max),
-#         # title='時間'
-                                    
-#                                     )
-#                 )          
-# st.subheader('昨日の概日リズム')                           
-# st.plotly_chart(fig_yd,use_container_width=True) 
 
 # COREの30分前との変化率取得
 chang_rate = plot_data['Temp'].pct_change(30, axis=0)
@@ -230,35 +216,36 @@ st.markdown("{0}{1}{2}".format(a,c,b))
 st.caption("正常なリズムの場合，入眠と共に深部体温は低下していきます．低下しない場合，良い睡眠は得られません．体温の最高値と最低値の差は健康な場合1°C程度です．")
 
 # 変化率のグラフ
-fig_cr = go.Figure()
-fig_cr.add_trace(go.Scatter(x=plot_data['DateTime'],
-                        y=plot_data['diff30m'],
-                        mode='lines',
-                        ))
 
-fig_cr.update_layout(
-        legend=dict(
-                        x=0.015,
-                        y=0.96,
-                        orientation='h'),
-                        showlegend=True,
-                        margin=dict(
-                        t=0,
-                        b=30,
-                        l=25,
-                        r=0
-                ),
-        height = 200,
-        # showlegend=True,
-        yaxis=dict(
-         # range=(y_min, y_max),
-        # title='深部体温'
-                                    ),
-        xaxis=dict(
-        # range=(x_min, x_max),
-        # title='時間'
+# fig_cr = go.Figure()
+# fig_cr.add_trace(go.Scatter(x=plot_data['DateTime'],
+#                         y=plot_data['diff30m'],
+#                         mode='lines',
+#                         ))
+
+# fig_cr.update_layout(
+#         legend=dict(
+#                         x=0.015,
+#                         y=0.96,
+#                         orientation='h'),
+#                         showlegend=True,
+#                         margin=dict(
+#                         t=0,
+#                         b=30,
+#                         l=25,
+#                         r=0
+#                 ),
+#         height = 200,
+#         # showlegend=True,
+#         yaxis=dict(
+#         # range=(, y_max),
+#         # title='深部体温'
+#                                     ),
+#         xaxis=dict(
+#         # range=(dt_dby, dt_yd),
+#         # title='時間'
                                     
-                                    )
-                )          
-st.subheader('変化率') 
-st.plotly_chart(fig_cr,use_container_width=True) 
+#                                     )
+#                 )          
+# st.subheader('変化率') 
+# st.plotly_chart(fig_cr,use_container_width=True) 
