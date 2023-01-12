@@ -37,8 +37,8 @@ end_text = dt_now
 
 start_text_yd = dt_dby
 end_text_yd = dt_yd
-# start_text = '2022-12-18'# 18日の寝た時間19日の朝起きた時間
-# end_text = '2022-12-18' # 19日の寝た時間20日の朝起きた時間 こっちはもし19日ならまだjsonデータがない
+# start_text = '2023-01-04'# 18日の寝た時間19日の朝起きた時間
+# end_text = '2023-01-04' # 19日の寝た時間20日の朝起きた時間 こっちはもし19日ならまだjsonデータがない
 
 #Sleepデータをdataframeに格納
 data_oura = client.sleep_df(start=start_text, end=end_text)
