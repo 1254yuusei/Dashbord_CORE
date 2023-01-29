@@ -32,13 +32,13 @@ access_token="QVRKWLEC4P6F7OICXAPUDX5WIVRHANEV"
 client = oura.client_pandas.OuraClientDataFrame(personal_access_token=access_token)
 
 #期間を指定（全期間が欲しい場合はこのままでOKです。）
-start_text = dt_yd
-end_text = dt_now
+# start_text = dt_yd
+# end_text = dt_now
 
-start_text_yd = dt_dby
-end_text_yd = dt_yd
-# start_text = '2023-01-04'# 18日の寝た時間19日の朝起きた時間
-# end_text = '2023-01-04' # 19日の寝た時間20日の朝起きた時間 こっちはもし19日ならまだjsonデータがない
+# start_text_yd = dt_dby
+# end_text_yd = dt_yd
+start_text = '2023-01-21'# 18日の寝た時間19日の朝起きた時間
+end_text = '2023-01-21' # 19日の寝た時間20日の朝起きた時間 こっちはもし19日ならまだjsonデータがない
 
 #Sleepデータをdataframeに格納
 data_oura = client.sleep_df(start=start_text, end=end_text)
@@ -51,13 +51,13 @@ date_end =pd.to_datetime(data_oura['bedtime_end_dt_adjusted'], format='%Y-%m-%d 
 date_end = date_end.dt.tz_localize(None)
 sleep_score = data_oura['score_total'][0]
 duration_in_hrs = data_oura['duration_in_hrs'][0]
-
-print(sleep_score)
-print(duration_in_hrs)
+LatencyScore = data_oura['score_latency'][0]
+# print(sleep_score)
+# print(duration_in_hrs)
 
 
 #COREのデータ取得
-df = pd.read_csv('data/CORE_data.csv', sep = ';', header = 1,)
+df = pd.read_csv('data/CORE_0122_福留.csv', sep = ';', header = 1,)
 # df = pd.read_csv('data/CORE_data_1219.csv', sep = ';', header = 1,)
 data = pd.to_datetime(df.iloc[:,0], format = '%d.%m.%Y %H:%M:%S')
 
@@ -85,8 +85,8 @@ plot_data_dby = pd.DataFrame(data_dby)
 plot_data_dby['Temp'] = y_dby
 new_datetime_dby = plot_data_dby['DateTime'] + datetime.timedelta(days=2)
 
-print(new_datetime_dby)
-print(plot_data_dby['Temp'])
+# print(new_datetime_dby)
+# print(plot_data_dby['Temp'])
 
 
 
@@ -183,6 +183,19 @@ ss2 = sleep_score
 ss3 = 'でした'
 st.markdown("{0}{1}{2}".format(ss1,ss2,ss3))
 
+# 睡眠開始時間
+# ss1 = '睡眠開始時間は'
+# ss2 = date_start
+# ss3 = 'でした'
+# st.markdown("{0}{1}{2}".format(ss1,ss2,ss3))
+
+
+# # 睡眠終了時間
+# ss1 = '睡眠終了時間は'
+# ss2 = date_end
+# ss3 = 'でした'
+# st.markdown("{0}{1}{2}".format(ss1,ss2,ss3))
+
 # 睡眠時間
 
 # 小数点切り捨て
@@ -196,6 +209,37 @@ ss3 = '時間でした'
 st.markdown("{0}{1}{2}".format(ss1,ss2,ss3))
 
 
+# 睡眠潜時スコア
+# ss1 = '睡眠潜時スコアは'
+# ss2 = LatencyScore
+# ss3 = 'でした'
+# st.markdown("{0}{1}{2}".format(ss1,ss2,ss3))
+# print(LatencyScore)
+
+
+# 体温最高値
+# max_temp = max(plot_data['Temp'])
+# df_max = plot_data.query('Temp == @max_temp')
+
+
+
+# x = '体温の最高値を記録した時間は'
+# yy = df_max.iloc[0,0]
+# y = yy.strftime('%H時%M分%S秒')
+# z = 'でした'
+# st.markdown("{0}{1}{2}".format(x,y,z))
+
+# # 体温最低値
+# min_temp = min(plot_data['Temp'])
+# df_min = plot_data.query('Temp == @min_temp')
+
+
+
+# x = '体温の最低値を記録した時間は'
+# yy = df_min.iloc[0,0]
+# y = yy.strftime('%H時%M分%S秒')
+# z = 'でした'
+# st.markdown("{0}{1}{2}".format(x,y,z))
 
 # 起床時刻と体温上がり初めの差異
 rhythm_delay = df_getup.strftime('%H時%M分%S秒')
