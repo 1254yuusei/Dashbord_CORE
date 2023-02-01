@@ -219,28 +219,28 @@ st.markdown("{0}{1}{2}".format(ss1,ss2,ss3))
 
 
 # 体温最高値
-# max_temp = max(plot_data['Temp'])
-# df_max = plot_data.query('Temp == @max_temp')
+max_temp = max(plot_data['Temp'])
+df_max = plot_data.query('Temp == @max_temp')
 
 
 
-# x = '体温の最高値を記録した時間は'
-# yy = df_max.iloc[0,0]
-# y = yy.strftime('%H時%M分%S秒')
-# z = 'でした'
-# st.markdown("{0}{1}{2}".format(x,y,z))
+x = '体温の最高値を記録した時間は'
+yy = df_max.iloc[0,0]
+y = yy.strftime('%H時%M分%S秒')
+z = 'でした'
+st.markdown("{0}{1}{2}".format(x,y,z))
 
-# # 体温最低値
-# min_temp = min(plot_data['Temp'])
-# df_min = plot_data.query('Temp == @min_temp')
+# 体温最低値
+min_temp = min(plot_data['Temp'])
+df_min = plot_data.query('Temp == @min_temp')
 
 
 
-# x = '体温の最低値を記録した時間は'
-# yy = df_min.iloc[0,0]
-# y = yy.strftime('%H時%M分%S秒')
-# z = 'でした'
-# st.markdown("{0}{1}{2}".format(x,y,z))
+x = '体温の最低値を記録した時間は'
+yy = df_min.iloc[0,0]
+y = yy.strftime('%H時%M分%S秒')
+z = 'でした'
+st.markdown("{0}{1}{2}".format(x,y,z))
 
 # 起床時刻と体温上がり初めの差異
 rhythm_delay = df_getup.strftime('%H時%M分%S秒')
